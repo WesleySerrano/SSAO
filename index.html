@@ -1,0 +1,92 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Cube</title>
+    <script id="vertex-shader" type="x-shader/x-vertex">
+
+attribute vec4 vPosition;
+attribute vec4 attributeVColor;
+
+uniform mat4 cubeRotation;
+
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+uniform int lines;
+uniform int rotationAxis;
+uniform int originAxis;
+
+varying vec4 vColor;
+
+void
+main()
+{
+    mat4 transformationMatrix = mat4(1.0);
+
+    if(originAxis != 0)
+    {
+       vColor.rgb = vPosition.rgb;
+       vColor.a = 1.0;
+    }
+    else if(rotationAxis != 0)
+    {
+       vColor = vec4(1.0,0.0,1.0,1.0);
+    }
+    else
+    {
+        if(lines == 0)
+        {
+           vColor = attributeVColor;
+           transformationMatrix = cubeRotation * transformationMatrix;
+        }
+        else if(abs(vPosition.z) > 1.0)
+        {
+          vColor = vec4(1.0);
+        }
+        else if(vPosition.x == 0.0 || vPosition.y == 0.0 || vPosition.z == 0.0)
+        {
+           transformationMatrix = cubeRotation * transformationMatrix;
+           vColor.rgb = vPosition.rgb;
+           vColor.a = 1.0;
+        }
+        else
+        {
+          vColor = vec4(0.0,0.0,0.0,1.0);
+          transformationMatrix = cubeRotation * transformationMatrix;
+        }
+    }
+
+    gl_Position = projectionMatrix*modelViewMatrix*transformationMatrix*vPosition;
+}
+</script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+
+varying vec4 vColor;
+void
+main()
+{
+    gl_FragColor = vColor;
+}
+</script>
+
+    <script type="text/javascript" src="../Common/webgl-utils.js"></script>
+    <script type="text/javascript" src="../Common/initShaders.js"></script>
+    <script type="text/javascript" src="../Common/MV.js"></script>
+    <script type="text/javascript" src="ssao.js"></script>
+</head>
+
+<body>
+<canvas id="gl-canvas" width="800" height="800">
+    Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+<br>
+<input id="perspectiveCheckBox" type="checkbox" onchange="changeProjection()" name="projection" value="perspective">Perspectiva<br>
+<input id="cameraRotationCheckBox" type="checkbox" name="worldRotation" checked value="worldRotation">Rotacionar a c&acirc;mera<br>
+<button id = "ButtonX" onclick="cubeRotateX()">Rotaciona X</button>
+<button id = "ButtonY" onclick="cubeRotateY()">Rotaciona Y</button>
+<button id = "ButtonZ" onclick="cubeRotateZ()">Rotaciona Z</button>
+<br><br>
+&theta;: <input id = "theta" onchange="updateRotationAxis()" value="0"></input>  &phi;: <input id = "phi" onchange="updateRotationAxis()" value="0"></input>
+</body>
+</html>
