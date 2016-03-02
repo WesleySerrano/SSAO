@@ -47,7 +47,7 @@ function loadObject(objFilePath,  position, scale, rotate)
                  fragmentShader: document.
                      getElementById('fragment-shader').text
              });
-            //var material = new THREE.MeshPhongMaterial({ color: 0xffffff });
+            var material2 = new THREE.MeshPhongMaterial({ color: 0xffffff });
 
             object.traverse( function(child) {
                 if (child instanceof THREE.Mesh) {
@@ -89,9 +89,10 @@ function init()
 
     var light2 = new THREE.PointLight(0xffffff);
     light2.position.set(2.45, 5, 0);
-    scene.add(light2);
+    //scene.add(light2);
 
-    loadObject('bull.obj', [0,0,0], [1,1,1], [0,0,0]);
+    //loadObject('bull.obj', [0,0,0], [1,1,1], false);
+    loadObject('bull.obj', [0,0,0], [1,1,1], true);
 
     render();
 }
