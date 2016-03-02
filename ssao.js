@@ -5,48 +5,6 @@
 var scene, camera, renderer, composer;
 var WIDTH = 1280, HEIGHT = 720;
 
-THREE.SSAOShader =
-{
-    uniforms:
-    {
-
-        "tDiffuse": { type: "t", value: null },
-        "side":     { type: "i", value: 1 }
-
-    },
-
-    vertexShader:
-    [
-
-        "varying vec2 vUv;",
-
-        "void main() {",
-
-        "vUv = uv;",
-        "gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
-
-        "}"
-
-    ].join( "\n" ),
-
-    fragmentShader:
-    [
-
-        "uniform sampler2D tDiffuse;",
-
-        "varying vec2 vUv;",
-
-        "void main() {",
-
-        "vec2 p = vUv;",
-        "vec4 color = texture2D(tDiffuse, p);",
-        "gl_FragColor = 0.5*color;",
-
-        "}"
-
-    ].join( "\n" )
-
-};
 function loadObject(objFilePath,  position, scale, rotate)
 {
     position = typeof position !== 'undefined'? position : [0, 0, 0];
@@ -115,6 +73,8 @@ function init()
     composer.addPass( new THREE.RenderPass( scene, camera ) );
 
     var effect = new THREE.ShaderPass( THREE.SSAOShader );
+    effect.renderToScreen = true;
+
     composer.addPass( effect );
 
     render();
@@ -124,6 +84,10 @@ function render()
 {
     requestAnimationFrame(render);
     renderer.render( scene, camera );
-    composer.render(0.1);
+    composer.render();
+    /*if(document.getElementsByName("ssao-switch").checked)
+       composer.render();
+    else
+        renderer.render( scene, camera );*/
     controls.update();
 }
