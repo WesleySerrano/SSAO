@@ -2,30 +2,51 @@
  * Created by Wesley on 01/11/2015.
  */
 
-var scene, camera, renderer;
+var scene, camera, renderer, composer;
 var WIDTH = 1280, HEIGHT = 720;
 
-
-/*function loadObjectAndMaterial(objFilePath, mtlFilePath, position, scale, rotate)
+THREE.SSAOShader =
 {
-    position = typeof position !== 'undefined'? position : [0, 0, 0];
-    rotate = typeof rotate !== 'undefined'? rotate : false;
-    scale = typeof scale !== 'undefined'? scale : [1, 1, 1];
+    uniforms:
+    {
 
-    var objectLoader = new THREE.OBJMTLLoader();
+        "tDiffuse": { type: "t", value: null },
+        "side":     { type: "i", value: 1 }
 
-    objectLoader.load(objFilePath,mtlFilePath, function(object)
-        {
-            object.position.x = position[0];
-            object.position.y = position[1];
-            object.position.z = position[2];
-            object.scale.set(scale[0], scale[1], scale[2]);
-            if(rotate) object.rotation.y = Math.PI/2.0;
-            scene.add(object);
-        }
-    );
-}*/
+    },
 
+    vertexShader:
+    [
+
+        "varying vec2 vUv;",
+
+        "void main() {",
+
+        "vUv = uv;",
+        "gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+
+        "}"
+
+    ].join( "\n" ),
+
+    fragmentShader:
+    [
+
+        "uniform sampler2D tDiffuse;",
+
+        "varying vec2 vUv;",
+
+        "void main() {",
+
+        "vec2 p = vUv;",
+        "vec4 color = texture2D(tDiffuse, p);",
+        "gl_FragColor = 0.5*color;",
+
+        "}"
+
+    ].join( "\n" )
+
+};
 function loadObject(objFilePath,  position, scale, rotate)
 {
     position = typeof position !== 'undefined'? position : [0, 0, 0];
@@ -47,13 +68,13 @@ function loadObject(objFilePath,  position, scale, rotate)
                  fragmentShader: document.
                      getElementById('fragment-shader').text
              });
-            var material2 = new THREE.MeshPhongMaterial({ color: 0xffffff });
+            var material2 = new THREE.MeshPhongMaterial({ color: 0xec7a21 });
 
             object.traverse( function(child) {
                 if (child instanceof THREE.Mesh) {
 
                     // apply custom material
-                    child.material = material;
+                    child.material = material2;
 
                     // enable casting shadows
                     child.castShadow = true;
@@ -83,16 +104,18 @@ function init()
     document.body.appendChild( renderer.domElement );
     controls = new THREE.OrbitControls(camera, renderer.domElement);
 
+    scene.add( new THREE.AmbientLight( 0x222222 ) );
     var light = new THREE.PointLight(0xffffff);
     light.position.set(100,50,50);
     scene.add(light);
 
-    var light2 = new THREE.PointLight(0xffffff);
-    light2.position.set(2.45, 5, 0);
-    //scene.add(light2);
-
-    //loadObject('bull.obj', [0,0,0], [1,1,1], false);
     loadObject('bull.obj', [0,0,0], [1,1,1], true);
+
+    composer = new THREE.EffectComposer( renderer );
+    composer.addPass( new THREE.RenderPass( scene, camera ) );
+
+    var effect = new THREE.ShaderPass( THREE.SSAOShader );
+    composer.addPass( effect );
 
     render();
 }
@@ -101,5 +124,6 @@ function render()
 {
     requestAnimationFrame(render);
     renderer.render( scene, camera );
+    composer.render(0.1);
     controls.update();
 }
