@@ -1,8 +1,8 @@
 /**
- * Created by Wesley on 01/03/16.
+ * Created by Wesley on 02/03/16.
  */
 
-THREE.SSAOShader = {
+THREE.BlurShader = {
 
     uniforms: {
 
@@ -41,5 +41,4 @@ THREE.SSAOShader = {
         "}"
 
     ].join( "\n" )
-
 };

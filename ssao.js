@@ -2,7 +2,8 @@
  * Created by Wesley on 01/11/2015.
  */
 
-var scene, camera, renderer, composer;
+var scene, camera, renderer, effectComposer, depthMaterial;
+var depthRenderTarget;
 var WIDTH = 1280, HEIGHT = 720;
 
 function loadObject(objFilePath,  position, scale, rotate)
@@ -15,24 +16,13 @@ function loadObject(objFilePath,  position, scale, rotate)
 
     objectLoader.load(objFilePath, function(object)
         {
-
-             //var material = new THREE.MeshFaceMaterial(materials);
-             var material = new THREE.ShaderMaterial({
-                 uniforms: {
-                     color: {type: 'f', value: 1.0}
-                 },
-                 vertexShader: document.
-                     getElementById('vertex-shader').text,
-                 fragmentShader: document.
-                     getElementById('fragment-shader').text
-             });
-            var material2 = new THREE.MeshPhongMaterial({ color: 0xec7a21 });
+            var material = new THREE.MeshPhongMaterial({ color: 0xec7a21 });
 
             object.traverse( function(child) {
                 if (child instanceof THREE.Mesh) {
 
                     // apply custom material
-                    child.material = material2;
+                    child.material = material;
 
                     // enable casting shadows
                     child.castShadow = true;
@@ -53,10 +43,11 @@ function loadObject(objFilePath,  position, scale, rotate)
 function init()
 {
     scene = new THREE.Scene();
+
     camera = new THREE.PerspectiveCamera( 75, WIDTH/HEIGHT, 0.1, 1000 );
-    camera.position.x = 20;
-    camera.position.y = 13;
-    camera.position.z = 10;
+    camera.position.x = 100;
+    camera.position.y = 65;
+    camera.position.z = 50;
     renderer = new THREE.WebGLRenderer();
     renderer.setSize( WIDTH,HEIGHT);
     document.body.appendChild( renderer.domElement );
@@ -66,16 +57,39 @@ function init()
     var light = new THREE.PointLight(0xffffff);
     light.position.set(100,50,50);
     scene.add(light);
+    loadObject('jeep.obj',  [0,0,0], [0.1,0.1,0.1], false)
 
-    loadObject('bull.obj', [0,0,0], [1,1,1], true);
+    // Setup render pass
+    var renderPass = new THREE.RenderPass( scene, camera );
 
-    composer = new THREE.EffectComposer( renderer );
-    composer.addPass( new THREE.RenderPass( scene, camera ) );
+    // Setup depth pass
+    var depthShader = THREE.ShaderLib[ "depthRGBA" ];
+    var depthUniforms = THREE.UniformsUtils.clone( depthShader.uniforms );
 
-    var effect = new THREE.ShaderPass( THREE.SSAOShader );
-    effect.renderToScreen = true;
+    depthMaterial = new THREE.ShaderMaterial( { fragmentShader: depthShader.fragmentShader, vertexShader: depthShader.vertexShader,
+        uniforms: depthUniforms, blending: THREE.NoBlending } );
 
-    composer.addPass( effect );
+    var pars = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter };
+    depthRenderTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, pars );
+
+    // Setup SSAO pass
+    var ssaoPass = new THREE.ShaderPass( THREE.OurSSAOShader );
+    ssaoPass.renderToScreen = true;
+    //ssaoPass.uniforms[ "tDiffuse" ].value will be set by ShaderPass
+    ssaoPass.uniforms[ "depthTexture" ].value = depthRenderTarget;
+    ssaoPass.uniforms[ 'textureSize' ].value.set( window.innerWidth, window.innerHeight );
+    ssaoPass.uniforms[ 'cameraNear' ].value = camera.near;
+    ssaoPass.uniforms[ 'cameraFar' ].value = camera.far;
+    ssaoPass.uniforms[ 'ambientOcclusionClamp' ].value = 0.3;
+    ssaoPass.uniforms[ 'luminosityInfluence' ].value = 0.5;
+
+    var blurPass = new THREE.ShaderPass( THREE.BlurShader);
+
+    // Add pass to effect composer
+    effectComposer = new THREE.EffectComposer( renderer, new THREE.WebGLRenderTarget( WIDTH, HEIGHT, pars ) );
+    effectComposer.addPass( renderPass );
+    effectComposer.addPass( ssaoPass );
+    //effectComposer.addPass( blurPass );
 
     render();
 }
@@ -83,11 +97,20 @@ function init()
 function render()
 {
     requestAnimationFrame(render);
-    renderer.render( scene, camera );
-    composer.render();
-    /*if(document.getElementsByName("ssao-switch").checked)
-       composer.render();
+
+    if(document.getElementById("ssao-switch").checked)
+    {
+        // Render depth into depthRenderTarget
+        scene.overrideMaterial = depthMaterial;
+        renderer.render( scene, camera, depthRenderTarget, true );
+
+        // Render renderPass and SSAO shaderPass
+        scene.overrideMaterial = null;
+        effectComposer.render();
+    }
     else
-        renderer.render( scene, camera );*/
+    {
+        renderer.render(scene, camera);
+    }
     controls.update();
 }
