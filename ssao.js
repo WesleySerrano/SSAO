@@ -69,7 +69,7 @@ function init()
   scene.add(light);
   loadObject('pickup/PickUp.obj',  [0,0,0], [10,10,10], false, 0xec7a21)
 
-  loadObject('jeep.obj',  [-130,0,0], [0.1,0.1,0.1], false, 0xec7a21)
+  loadObject('jeep.obj',  [-130,0,0], [0.1,0.1,0.1], false, 0x004080)
 
   //starts UI
   document.getElementById("ssao-switch").checked = ssaoActive;
