@@ -51,7 +51,7 @@ THREE.OurSSAOShader = {
 
         "varying vec2 vUv;",
 
-        "const int samples = 64;",
+        "const int samples = 16;",
         "uniform float sphereRadius;",
 
         "const bool useNoise = false;",

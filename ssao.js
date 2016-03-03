@@ -9,7 +9,7 @@ var WIDTH = 1280, HEIGHT = 720;
 var ssaoActive = false;
 var blurActive = false;
 var sphereRadius = 2;
-var gaussianDisplacement = 0.4;
+var gaussianDisplacement = 0.2;
 var blurIntensity = 1.0;
 
 function loadObject(objFilePath,  position, scale, rotate, color)
@@ -29,6 +29,11 @@ function loadObject(objFilePath,  position, scale, rotate, color)
 
         // apply custom material
         child.material = material;
+        // var loader = new THREE.DDSLoader();
+        // child.material.map = loader.load( 'pickup/pickup_exterior_d.dds' );
+				// child.material.map.minFilter = child.material.map.magFilter = THREE.LinearFilter;
+				// child.material.map.anisotropy = 8;
+        // child.material.needsUpdate = true;
 
         // enable casting shadows
         child.castShadow = true;
@@ -58,11 +63,13 @@ function init()
   document.body.appendChild( renderer.domElement );
   controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-  scene.add( new THREE.AmbientLight( 0x222222 ) );
+  scene.add( new THREE.AmbientLight( 0x555555 ) );
   var light = new THREE.PointLight(0xffffff);
-  light.position.set(100,50,50);
+  light.position.set(100,90,90);
   scene.add(light);
-  loadObject('jeep.obj',  [0,0,0], [0.1,0.1,0.1], false, 0xec7a21)
+  loadObject('pickup/PickUp.obj',  [0,0,0], [10,10,10], false, 0xec7a21)
+
+  loadObject('jeep.obj',  [-130,0,0], [0.1,0.1,0.1], false, 0xec7a21)
 
   //starts UI
   document.getElementById("ssao-switch").checked = ssaoActive;
