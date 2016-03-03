@@ -1,5 +1,5 @@
 /**
- * Created by Wesley on 01/11/2015.
+ * Created by Wesley and Luan on 01/11/2015.
  */
 
 var scene, camera, renderer, effectComposer, depthMaterial;
@@ -87,7 +87,6 @@ function initializePostProcessing()
 
   // Setup SSAO pass
   ssaoPass = new THREE.ShaderPass( THREE.OurSSAOShader );
-  ssaoPass.renderToScreen = true;
   //ssaoPass.uniforms[ "tDiffuse" ].value will be set by ShaderPass
   ssaoPass.uniforms[ "depthTexture" ].value = depthRenderTarget;
   ssaoPass.uniforms[ 'textureSize' ].value.set( window.innerWidth, window.innerHeight );
@@ -97,12 +96,20 @@ function initializePostProcessing()
   ssaoPass.uniforms[ 'luminosityInfluence' ].value = 0.5;
 
   blurPass = new THREE.ShaderPass( THREE.BlurShader);
+  blurPass.uniforms[ "tDiffuse" ].value = depthRenderTarget;
 
   makeEffectComposer();
 }
 
 function makeEffectComposer()
 {
+  if(blurActive) {
+    ssaoPass.renderToScreen = false;
+    blurPass.renderToScreen = true;
+  }
+  else if(ssaoPass) {
+      ssaoPass.renderToScreen = true;
+  }
   // Add all passes to effect composer
   effectComposer = new THREE.EffectComposer( renderer, new THREE.WebGLRenderTarget( WIDTH, HEIGHT, pars ) );
   effectComposer.addPass( renderPass );
@@ -114,22 +121,26 @@ function render()
 {
     requestAnimationFrame(render);
 
-    if(document.getElementById("ssao-switch").checked)
+    if(withoutEffects())
     {
-        // Render depth into depthRenderTarget
-        scene.overrideMaterial = depthMaterial;
-        renderer.render( scene, camera, depthRenderTarget, true );
-
-        // Render renderPass and SSAO shaderPass
-        //Post Processing
-        scene.overrideMaterial = null;
-        effectComposer.render();
+      renderer.render(scene, camera);
     }
     else
     {
-        renderer.render(scene, camera);
+      // Render depth into depthRenderTarget
+      scene.overrideMaterial = depthMaterial;
+      renderer.render( scene, camera, depthRenderTarget, true );
+
+      // Render renderPass and SSAO shaderPass
+      //Post Processing
+      scene.overrideMaterial = null;
+      effectComposer.render();
     }
     controls.update();
+}
+
+function withoutEffects(){
+  return !ssaoActive && !blurActive;
 }
 
 function toggleSSAO(checkbox){

@@ -1,5 +1,5 @@
 /**
- * Created by Wesley on 01/03/16.
+ * Created by Wesley and Luan on 01/03/16.
  */
 
 THREE.OurSSAOShader = {
@@ -37,22 +37,22 @@ THREE.OurSSAOShader = {
 
         "uniform sampler2D tDiffuse;",
         "uniform sampler2D depthTexture;",
-        
+
         "uniform float cameraNear;",
         "uniform float cameraFar;",
-        
+
         "uniform vec2 textureSize;",
         "uniform float ambientOcclusionClamp;",
 
-        "uniform float luminosityInfluence;",  
+        "uniform float luminosityInfluence;",
 
         "varying vec2 vUv;",
 
-        "const int samples = 8;",     
-        "const float sphereRadius = 5.0;",  
+        "const int samples = 8;",
+        "const float sphereRadius = 5.0;",
 
-        "const bool useNoise = false;",      
-        "const float noiseAmount = 0.0003;", 
+        "const bool useNoise = false;",
+        "const float noiseAmount = 0.0003;",
 
         "const float diffArea = 0.4;",
         "const float gaussianDisplacement = 0.4;",
