@@ -8,8 +8,11 @@ var depthRenderTarget;
 var WIDTH = 1280, HEIGHT = 720;
 var ssaoActive = false;
 var blurActive = false;
+var sphereRadius = 2;
+var gaussianDisplacement = 0.4;
+var blurIntensity = 1.0;
 
-function loadObject(objFilePath,  position, scale, rotate)
+function loadObject(objFilePath,  position, scale, rotate, color)
 {
   position = typeof position !== 'undefined'? position : [0, 0, 0];
   rotate = typeof rotate !== 'undefined'? rotate : false;
@@ -19,7 +22,7 @@ function loadObject(objFilePath,  position, scale, rotate)
 
   objectLoader.load(objFilePath, function(object)
   {
-    var material = new THREE.MeshPhongMaterial({ color: 0xec7a21 });
+    var material = new THREE.MeshPhongMaterial({ color: color });
 
     object.traverse( function(child) {
       if (child instanceof THREE.Mesh) {
@@ -59,11 +62,17 @@ function init()
   var light = new THREE.PointLight(0xffffff);
   light.position.set(100,50,50);
   scene.add(light);
-  loadObject('jeep.obj',  [0,0,0], [0.1,0.1,0.1], false)
+  loadObject('jeep.obj',  [0,0,0], [0.1,0.1,0.1], false, 0xec7a21)
 
   //starts UI
   document.getElementById("ssao-switch").checked = ssaoActive;
   document.getElementById("blur-switch").checked = blurActive;
+  document.getElementById("sphere-radius").value = sphereRadius;
+  document.getElementById("sphere-radius-text").value = "(" + parseFloat(sphereRadius).toFixed(1) + ") Samples Sphere Radius";
+  document.getElementById("gaussian-displacement").value = gaussianDisplacement;
+  document.getElementById("gaussian-displacement-text").value = "(" + parseFloat(gaussianDisplacement).toFixed(2) + ") Gaussian Displacement";
+  document.getElementById("blur-intensity").value = blurIntensity;
+  document.getElementById("blur-intensity-text").value = "(" + blurIntensity + ") Blur Intensity";
 
   initializePostProcessing();
 
@@ -92,8 +101,6 @@ function initializePostProcessing()
   ssaoPass.uniforms[ 'textureSize' ].value.set( window.innerWidth, window.innerHeight );
   ssaoPass.uniforms[ 'cameraNear' ].value = camera.near;
   ssaoPass.uniforms[ 'cameraFar' ].value = camera.far;
-  ssaoPass.uniforms[ 'ambientOcclusionClamp' ].value = 0.3;
-  ssaoPass.uniforms[ 'luminosityInfluence' ].value = 0.5;
 
   blurPass = new THREE.ShaderPass( THREE.BlurShader);
   blurPass.uniforms[ "tDiffuse" ].value = depthRenderTarget;
@@ -110,6 +117,15 @@ function makeEffectComposer()
   else if(ssaoPass) {
       ssaoPass.renderToScreen = true;
   }
+
+  ssaoPass.uniforms[ 'ambientOcclusionClamp' ].value = 0.3;
+  ssaoPass.uniforms[ 'luminosityInfluence' ].value = 0.5;
+  ssaoPass.uniforms[ 'diffArea' ].value = 0.4;
+  ssaoPass.uniforms[ 'gaussianDisplacement' ].value = gaussianDisplacement;
+  ssaoPass.uniforms[ 'sphereRadius' ].value = sphereRadius;
+
+  blurPass.uniforms[ "aBlurIntensity" ].value = blurIntensity;
+
   // Add all passes to effect composer
   effectComposer = new THREE.EffectComposer( renderer, new THREE.WebGLRenderTarget( WIDTH, HEIGHT, pars ) );
   effectComposer.addPass( renderPass );
@@ -150,5 +166,23 @@ function toggleSSAO(checkbox){
 
 function toggleBlur(checkbox){
   blurActive = checkbox.checked;
+  makeEffectComposer();
+}
+
+function setSphereRadius(slider){
+  sphereRadius = slider.value;
+  document.getElementById("sphere-radius-text").value = "(" + parseFloat(slider.value).toFixed(1) + ") Samples Sphere Radius";
+  makeEffectComposer();
+}
+
+function setGaussianDisplacement(slider){
+  gaussianDisplacement = slider.value;
+  document.getElementById("gaussian-displacement-text").value = "(" + parseFloat(slider.value).toFixed(2) + ") Gaussian Displacement";
+  makeEffectComposer();
+}
+
+function setBlurIntensity(slider){
+  blurIntensity = slider.value;
+  document.getElementById("blur-intensity-text").value = "(" + slider.value + ") Blur Intensity";
   makeEffectComposer();
 }

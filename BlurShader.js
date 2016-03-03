@@ -6,11 +6,13 @@ THREE.BlurShader = {
 
     uniforms: {
 
-        "tDiffuse": { type: "t", value: null }
+        "tDiffuse": { type: "t", value: null },
+        "aBlurIntensity": { type: 'f', value: 1.0 }
 
     },
 
     vertexShader: [
+      "uniform float aBlurIntensity;",
       "varying vec2 vUv;",
       "varying vec2 vBlurTexCoords[14];",
 
@@ -18,20 +20,20 @@ THREE.BlurShader = {
       "{",
           "gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
           "vUv = uv;",
-          "vBlurTexCoords[ 0] = vUv + vec2(0.0, -0.0028);",
-          "vBlurTexCoords[ 1] = vUv + vec2(0.0, -0.0024);",
-          "vBlurTexCoords[ 2] = vUv + vec2(0.0, -0.0020);",
-          "vBlurTexCoords[ 3] = vUv + vec2(0.0, -0.0016);",
-          "vBlurTexCoords[ 4] = vUv + vec2(0.0, -0.0012);",
-          "vBlurTexCoords[ 5] = vUv + vec2(0.0, -0.0008);",
-          "vBlurTexCoords[ 6] = vUv + vec2(0.0, -0.0004);",
-          "vBlurTexCoords[ 7] = vUv + vec2(0.0,  0.0004);",
-          "vBlurTexCoords[ 8] = vUv + vec2(0.0,  0.0008);",
-          "vBlurTexCoords[ 9] = vUv + vec2(0.0,  0.0012);",
-          "vBlurTexCoords[10] = vUv + vec2(0.0,  0.0016);",
-          "vBlurTexCoords[11] = vUv + vec2(0.0,  0.0020);",
-          "vBlurTexCoords[12] = vUv + vec2(0.0,  0.0024);",
-          "vBlurTexCoords[13] = vUv + vec2(0.0,  0.0028);",
+          "vBlurTexCoords[ 0] = vUv + vec2(0.0, -0.0028 * aBlurIntensity);",
+          "vBlurTexCoords[ 1] = vUv + vec2(0.0, -0.0024 * aBlurIntensity);",
+          "vBlurTexCoords[ 2] = vUv + vec2(0.0, -0.0020 * aBlurIntensity);",
+          "vBlurTexCoords[ 3] = vUv + vec2(0.0, -0.0016 * aBlurIntensity);",
+          "vBlurTexCoords[ 4] = vUv + vec2(0.0, -0.0012 * aBlurIntensity);",
+          "vBlurTexCoords[ 5] = vUv + vec2(0.0, -0.0008 * aBlurIntensity);",
+          "vBlurTexCoords[ 6] = vUv + vec2(0.0, -0.0004 * aBlurIntensity);",
+          "vBlurTexCoords[ 7] = vUv + vec2(0.0,  0.0004 * aBlurIntensity);",
+          "vBlurTexCoords[ 8] = vUv + vec2(0.0,  0.0008 * aBlurIntensity);",
+          "vBlurTexCoords[ 9] = vUv + vec2(0.0,  0.0012 * aBlurIntensity);",
+          "vBlurTexCoords[10] = vUv + vec2(0.0,  0.0016 * aBlurIntensity);",
+          "vBlurTexCoords[11] = vUv + vec2(0.0,  0.0020 * aBlurIntensity);",
+          "vBlurTexCoords[12] = vUv + vec2(0.0,  0.0024 * aBlurIntensity);",
+          "vBlurTexCoords[13] = vUv + vec2(0.0,  0.0028 * aBlurIntensity);",
       "}"
 
         // "varying vec2 vUv;",
